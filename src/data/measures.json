@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "colher de sopa": 15,
+    "colher de chá": 5,
+    "concha": 100,
+    "xícara": 200,
+    "copo": 200,
+    "fatia": 30,
+    "unidade": 50,
+    "prato raso": 300,
+    "prato fundo": 400,
+    "punhado": 30,
+    "g": 1,
+    "ml": 1
+  },
+  "specifics": {
+    "arroz_cozido": {
+      "colher de sopa": 25,
+      "xícara": 150
+    },
+    "feijao_carioca": {
+      "concha": 100,
+      "colher de sopa": 20
+    },
+    "azeite_oliva": {
+      "colher de sopa": 8,
+      "colher de chá": 3
+    },
+    "pao_frances": {
+      "unidade": 50
+    },
+    "ovo_cozido": {
+      "unidade": 50
+    },
+    "manteiga": {
+      "colher de sopa": 10,
+      "colher de chá": 4
+    },
+    "queijo_mussarela": {
+      "fatia": 20
+    },
+    "pao_de_queijo": {
+      "unidade": 30
+    },
+    "banana_nanica": {
+      "unidade": 80
+    },
+    "maca_com_casca": {
+      "unidade": 130
+    },
+    "leite_integral": {
+      "copo": 200,
+      "xícara": 200
+    },
+    "cafe_sem_acucar": {
+      "xícara": 150,
+      "copo": 200
+    }
+  }
+}

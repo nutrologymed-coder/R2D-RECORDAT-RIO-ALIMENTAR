@@ -1,0 +1,5 @@
+{
+  "name": "R2D - Recordatório Alimentar",
+  "description": "Webapp para preenchimento de recordatório alimentar de 2 dias com cálculos nutricionais automáticos.",
+  "requestFramePermissions": []
+}
