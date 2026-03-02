@@ -18,11 +18,7 @@ import {
   Phone,
   Calendar,
   FileText,
-  Info,
-  LayoutDashboard,
-  Eye,
-  ArrowLeft,
-  Search as SearchIcon
+  Info
 } from 'lucide-react';
 import foodsData from './data/foods.json';
 import measuresData from './data/measures.json';
@@ -90,33 +86,6 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [protocol, setProtocol] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<'patient' | 'admin'>('patient');
-  const [entries, setEntries] = useState<any[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
-  const [isLoadingEntries, setIsLoadingEntries] = useState(false);
-
-  const fetchEntries = async () => {
-    setIsLoadingEntries(true);
-    try {
-      const response = await fetch('/api/entries', {
-        headers: { 'X-ACCESS-KEY': 'R2D-SECRET-2024' }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEntries(data);
-      }
-    } catch (err) {
-      console.error('Error fetching entries:', err);
-    } finally {
-      setIsLoadingEntries(false);
-    }
-  };
-
-  useEffect(() => {
-    if (view === 'admin') {
-      fetchEntries();
-    }
-  }, [view]);
 
   const handleAddFood = (day: 1 | 2, mealIndex: number) => {
     const setter = day === 1 ? setDay1 : setDay2;
@@ -227,140 +196,6 @@ export default function App() {
       setIsSubmitting(false);
     }
   };
-
-  if (view === 'admin') {
-    return (
-      <div className="min-h-screen bg-[#F8F9FA] text-[#0B1F3A] font-sans pb-20">
-        <header className="bg-[#0B1F3A] text-white py-8 px-6 shadow-xl">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => { setView('patient'); setSelectedEntry(null); }}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl font-bold">Painel do Médico</h1>
-            </div>
-            <div className="bg-blue-900/50 px-4 py-2 rounded-xl border border-blue-700 text-sm font-mono">
-              {entries.length} Registros
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-6xl mx-auto px-6 mt-8">
-          {selectedEntry ? (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-              <div className="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
-                <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <h2 className="text-3xl font-bold mb-2">{selectedEntry.patient_name}</h2>
-                    <p className="text-gray-500 flex items-center gap-2">
-                      <Phone className="w-4 h-4" /> {selectedEntry.patient_phone}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-gray-400 uppercase">Protocolo</p>
-                    <p className="font-mono font-bold text-[#0B1F3A]">{selectedEntry.protocol}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-gray-50 p-4 rounded-2xl">
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-1">Data de Início</p>
-                    <p className="font-semibold">{selectedEntry.start_date}</p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-2xl">
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-1">Enviado em</p>
-                    <p className="font-semibold">{new Date(selectedEntry.created_at).toLocaleString('pt-BR')}</p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-2xl">
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-1">Observações</p>
-                    <p className="font-semibold">{selectedEntry.notes || "Nenhuma"}</p>
-                  </div>
-                </div>
-
-                {/* Totals Summary */}
-                {(() => {
-                  const totals = JSON.parse(selectedEntry.totals_json);
-                  return (
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-                      {[
-                        { label: 'Kcal', value: totals.average.kcal.toFixed(0), unit: 'kcal', color: 'bg-blue-50 text-blue-700' },
-                        { label: 'Proteína', value: totals.average.protein.toFixed(1), unit: 'g', color: 'bg-emerald-50 text-emerald-700' },
-                        { label: 'Carbo', value: totals.average.carb.toFixed(1), unit: 'g', color: 'bg-amber-50 text-amber-700' },
-                        { label: 'Gordura', value: totals.average.fat.toFixed(1), unit: 'g', color: 'bg-rose-50 text-rose-700' },
-                        { label: 'Fibras', value: totals.average.fiber.toFixed(1), unit: 'g', color: 'bg-teal-50 text-teal-700' },
-                        { label: 'Sódio', value: totals.average.sodium_mg.toFixed(0), unit: 'mg', color: 'bg-slate-50 text-slate-700' },
-                      ].map((stat, i) => (
-                        <div key={i} className={`${stat.color} p-4 rounded-2xl text-center border border-transparent`}>
-                          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 opacity-70">{stat.label}</p>
-                          <p className="text-lg font-black">{stat.value}</p>
-                          <p className="text-[10px] font-bold">{stat.unit}</p>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                <button 
-                  onClick={() => setSelectedEntry(null)}
-                  className="w-full py-4 bg-gray-100 text-[#0B1F3A] font-bold rounded-xl hover:bg-gray-200 transition-colors"
-                >
-                  Voltar para a Lista
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Paciente</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Data</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Protocolo</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {isLoadingEntries ? (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-400">Carregando registros...</td></tr>
-                    ) : entries.length === 0 ? (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-400">Nenhum registro encontrado.</td></tr>
-                    ) : (
-                      entries.map((entry) => (
-                        <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <p className="font-bold text-[#0B1F3A]">{entry.patient_name}</p>
-                            <p className="text-xs text-gray-400">{entry.patient_phone}</p>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {new Date(entry.created_at).toLocaleDateString('pt-BR')}
-                          </td>
-                          <td className="px-6 py-4 font-mono text-xs font-bold text-blue-600">
-                            {entry.protocol}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <button 
-                              onClick={() => setSelectedEntry(entry)}
-                              className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
-    );
-  }
 
   if (protocol) {
     return (
@@ -707,17 +542,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="max-w-4xl mx-auto px-6 text-center text-gray-400 text-xs space-y-4">
+      <footer className="max-w-4xl mx-auto px-6 text-center text-gray-400 text-xs space-y-2">
         <div className="h-px bg-gray-200 w-full mb-6"></div>
-        <div className="flex justify-center space-x-4 mb-4">
-          <button 
-            onClick={() => setView('admin')}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition-all font-bold"
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span>PAINEL DO MÉDICO</span>
-          </button>
-        </div>
         <p>Não inclua informações sensíveis. Uso exclusivo para avaliação nutricional.</p>
         <p>© 2024 Nutrologia Médica • Sistema de Recordatório R2D</p>
       </footer>

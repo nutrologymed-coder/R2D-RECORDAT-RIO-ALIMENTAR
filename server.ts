@@ -64,20 +64,6 @@ async function startServer() {
     }
   });
 
-  app.get("/api/entries", (req, res) => {
-    const accessKey = req.headers['x-access-key'];
-    if (accessKey !== 'R2D-SECRET-2024' && accessKey !== process.env.ACCESS_KEY) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    try {
-      const entries = db.prepare("SELECT * FROM entries ORDER BY created_at DESC").all();
-      res.json(entries);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   app.get("/api/entry", (req, res) => {
     const protocol = req.query.protocol as string;
     if (!protocol) return res.status(400).json({ error: "Missing protocol" });
