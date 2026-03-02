@@ -29,17 +29,26 @@ Este projeto é um webapp premium para nutricionistas e médicos coletarem recor
 2. Vá em **Workers & Pages** > **Create Worker**.
 3. Copie o conteúdo de `worker/index.ts` para o editor do Worker.
 4. Em **Settings** > **Variables**, adicione:
-   - `ACCESS_KEY`: Uma chave secreta (ex: `MINHA-CHAVE-123`). Esta mesma chave deve ser usada no header `X-ACCESS-KEY` no frontend.
+   - `ACCESS_KEY`: Uma chave secreta (ex: `MINHA-CHAVE-123`). Esta chave é obrigatória para listar submissões e opcional para o envio (se configurada).
+5. Em **Settings** > **Bindings**, adicione o banco D1:
+   - **Variable name:** `DB`
+   - **Database:** `r2ddb` (ou o nome que você criou).
 
 ### 3. Banco de Dados (Cloudflare D1)
 
 1. No painel do Cloudflare, vá em **Workers & Pages** > **D1**.
 2. Clique em **Create Database** e dê o nome de `r2ddb`.
-3. No seu Worker, vá em **Settings** > **Bindings** > **Add Binding** > **D1 Database**.
-   - **Variable name (MUITO IMPORTANTE):** Deve ser `DB` (em maiúsculas).
-   - **Database:** Selecione `r2ddb`.
-   - *Nota: O código do Worker usa `env.DB`. Se você colocar outro nome na "Variable name", o salvamento falhará.*
-4. Para criar as tabelas, use o console SQL do D1 no painel e cole o conteúdo de `worker/schema.sql`.
+3. Para criar as tabelas, use o console SQL do D1 no painel e cole o conteúdo de `worker/schema.sql`.
+
+---
+
+## Endpoints da API
+
+- `GET /api/health`: Verifica se a API está online.
+- `POST /api/submit`: Envia um novo recordatório.
+- `GET /api/submissions?limit=10`: Lista os últimos envios (Requer header `X-ACCESS-KEY`).
+
+---
 
 ### 4. Envio de E-mail (Opcional)
 

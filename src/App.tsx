@@ -34,6 +34,7 @@ import {
 } from './types';
 import { calculateDailyTotals } from './utils/nutrition';
 import { FoodSearch } from './components/FoodSearch';
+import { API_BASE_URL, ACCESS_KEY } from './config';
 
 const MEAL_NAMES = [
   'Café da manhã',
@@ -170,16 +171,20 @@ export default function App() {
       summary: summary!
     };
 
+    const generatedProtocol = `R2D-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
     try {
-      // In a real scenario, this would be the Cloudflare Worker URL
-      // For this environment, we'll simulate the response if the worker isn't set up
-      const response = await fetch('/api/submit', {
+      const response = await fetch(`${API_BASE_URL}/api/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-ACCESS-KEY': 'R2D-SECRET-2024' // Simple access key
+          'X-ACCESS-KEY': ACCESS_KEY
         },
-        body: JSON.stringify(submission)
+        body: JSON.stringify({
+          patient_name: patient.name,
+          data_json: submission,
+          protocol: generatedProtocol
+        })
       });
 
       if (response.ok) {
@@ -190,8 +195,7 @@ export default function App() {
       }
     } catch (err) {
       // Fallback for demo purposes if API is not available
-      const mockProtocol = `R2D-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      setProtocol(mockProtocol);
+      setProtocol(generatedProtocol);
     } finally {
       setIsSubmitting(false);
     }

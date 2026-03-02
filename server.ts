@@ -29,10 +29,13 @@ async function startServer() {
 
   // API for local development and AI Studio Preview
   app.post("/api/submit", (req, res) => {
-    const accessKey = req.headers['x-access-key'];
-    // Accept both the default and a potentially configured key
-    if (accessKey !== 'R2D-SECRET-2024' && accessKey !== process.env.ACCESS_KEY) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const accessKey = req.get('X-ACCESS-KEY');
+    const defaultKey = 'R2D-SECRET-2024';
+    const envKey = process.env.ACCESS_KEY;
+    
+    if (accessKey !== defaultKey && accessKey !== envKey) {
+      console.warn(`Unauthorized submission attempt with key: ${accessKey}`);
+      return res.status(401).json({ error: 'Chave de acesso inválida' });
     }
 
     try {
@@ -60,6 +63,24 @@ async function startServer() {
       res.json({ ok: true, protocol, message: "Salvo localmente no servidor de desenvolvimento." });
     } catch (err: any) {
       console.error('Erro ao salvar:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/entries", (req, res) => {
+    const accessKey = req.get('X-ACCESS-KEY');
+    const defaultKey = 'R2D-SECRET-2024';
+    const envKey = process.env.ACCESS_KEY;
+
+    if (accessKey !== defaultKey && accessKey !== envKey) {
+      console.warn(`Unauthorized entries access attempt with key: ${accessKey}`);
+      return res.status(401).json({ error: 'Chave de acesso inválida' });
+    }
+
+    try {
+      const entries = db.prepare("SELECT * FROM entries ORDER BY created_at DESC").all();
+      res.json(entries);
+    } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
   });
