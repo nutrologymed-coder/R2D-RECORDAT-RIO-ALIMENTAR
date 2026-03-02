@@ -91,6 +91,21 @@ export default {
       });
     }
 
+    // GET /api/entries
+    if (method === "GET" && url.pathname === "/api/entries") {
+      try {
+        const entries = await env.DB.prepare("SELECT * FROM entries ORDER BY created_at DESC").all();
+        return new Response(JSON.stringify(entries.results), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ error: err.message }), { 
+          status: 500, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        });
+      }
+    }
+
     return new Response("Not Found", { status: 404 });
   },
 };
