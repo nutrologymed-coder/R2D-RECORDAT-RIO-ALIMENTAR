@@ -34,10 +34,11 @@ Este projeto é um webapp premium para nutricionistas e médicos coletarem recor
 ### 3. Banco de Dados (Cloudflare D1)
 
 1. No painel do Cloudflare, vá em **Workers & Pages** > **D1**.
-2. Clique em **Create Database** e dê o nome de `r2d_db`.
+2. Clique em **Create Database** e dê o nome de `r2ddb`.
 3. No seu Worker, vá em **Settings** > **Bindings** > **Add Binding** > **D1 Database**.
-   - Variable name: `DB`
-   - Database: Selecione `r2d_db`.
+   - **Variable name (MUITO IMPORTANTE):** Deve ser `DB` (em maiúsculas).
+   - **Database:** Selecione `r2ddb`.
+   - *Nota: O código do Worker usa `env.DB`. Se você colocar outro nome na "Variable name", o salvamento falhará.*
 4. Para criar as tabelas, use o console SQL do D1 no painel e cole o conteúdo de `worker/schema.sql`.
 
 ### 4. Envio de E-mail (Opcional)
@@ -46,6 +47,12 @@ Para que o recordatório seja enviado automaticamente para `nutrologymed@gmail.c
 1. Recomendamos usar o serviço [Resend](https://resend.com/) ou [Mailchannels](https://mailchannels.zendesk.com/hc/en-us/articles/4565814466701-Sending-Email-from-Cloudflare-Workers).
 2. No seu Worker, implemente a função `sendEmailToDoctor` chamando a API do serviço escolhido.
 3. Adicione sua API KEY nas variáveis de ambiente do Cloudflare.
+
+---
+
+## Observação sobre o Preview (AI Studio)
+
+No ambiente de visualização do AI Studio (Shared App URL), os dados agora são salvos em um banco de dados local (`data.db`) dentro do servidor de desenvolvimento. Isso permite que você teste o fluxo completo (enviar e ver o protocolo) antes de fazer o deploy final no Cloudflare.
 
 ---
 
