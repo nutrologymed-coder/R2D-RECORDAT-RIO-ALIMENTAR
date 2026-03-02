@@ -125,8 +125,9 @@ export default function App() {
   const handleAdminAccess = () => {
     const key = prompt('Digite a Chave de Acesso do Médico:');
     if (key) {
-      setAdminKey(key);
-      fetchEntries(key);
+      const trimmedKey = key.trim();
+      setAdminKey(trimmedKey);
+      fetchEntries(trimmedKey);
       setView('admin');
     }
   };
