@@ -167,8 +167,33 @@ function getDashboardHTML(submissions: any[]) {
     </main>
 
     <script>
-        function viewDetails(id) {
-            alert('Funcionalidade de visualização detalhada pode ser implementada via modal ou nova rota.');
+        async function viewDetails(id) {
+            try {
+                const res = await fetch('/api/submission/' + id);
+                if (!res.ok) throw new Error('Falha ao buscar dados');
+                const data = await res.json();
+                
+                // Create a modal or simple pre to show JSON
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = \`
+                    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+                        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800">Detalhes do Recordatório - \${data.patient_name}</h3>
+                            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                        </div>
+                        <div class="p-6 overflow-auto bg-slate-50 flex-1">
+                            <pre class="text-xs font-mono text-slate-700 whitespace-pre-wrap">\${JSON.stringify(data.data_json, null, 2)}</pre>
+                        </div>
+                        <div class="p-4 border-t border-slate-100 text-right">
+                            <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold">Fechar</button>
+                        </div>
+                    </div>
+                \`;
+                document.body.appendChild(modal);
+            } catch (err) {
+                alert(err.message);
+            }
         }
     </script>
 </body>
@@ -194,13 +219,24 @@ export default {
     // POST /api/submit
     if (path === "/api/submit" && method === "POST") {
       try {
-        const body = await request.json() as any;
-        const protocol = `R2D-${Date.now()}`;
-        
+        const payload = await request.json() as any;
+
+        const patient_name =
+          payload.patient_name ??
+          payload?.data_json?.patient?.name ??
+          "NÃO IDENTIFICADO";
+
+        const protocol =
+          payload.protocol ??
+          payload?.data_json?.protocol ??
+          `R2D-${Date.now()}`;
+
+        const data_json_text = JSON.stringify(payload.data_json ?? payload);
+
         await env.DB.prepare(
           "INSERT INTO submissions (patient_name, data_json, protocol) VALUES (?, ?, ?)"
         )
-          .bind(body.patient_name || "Anônimo", JSON.stringify(body), protocol)
+          .bind(patient_name, data_json_text, protocol)
           .run();
 
         return new Response(JSON.stringify({ ok: true, protocol }), {
@@ -214,7 +250,39 @@ export default {
       }
     }
 
-    // GET /api/submissions (JSON API)
+    // GET /api/submission/:id (Single row fetch for admin)
+    if (path.startsWith("/api/submission/") && method === "GET") {
+      const token = getCookie(request, SESSION_COOKIE_NAME);
+      const session = token ? await verifySession(token, env.SESSION_SECRET) : null;
+
+      if (!session) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
+      const id = path.split("/").pop();
+      const row = await env.DB.prepare(
+        "SELECT id, patient_name, protocol, created_at, data_json FROM submissions WHERE id = ? LIMIT 1"
+      ).bind(id).first() as any;
+
+      if (!row) {
+        return new Response(JSON.stringify({ error: "Not found" }), {
+          status: 404,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        ...row,
+        data_json: row?.data_json ? JSON.parse(row.data_json) : null
+      }), {
+        headers: { ...corsHeaders(), "Content-Type": "application/json" },
+      });
+    }
+
+    // GET /api/submissions (JSON API - List)
     if (path === "/api/submissions" && method === "GET") {
       const token = getCookie(request, SESSION_COOKIE_NAME);
       const session = token ? await verifySession(token, env.SESSION_SECRET) : null;
